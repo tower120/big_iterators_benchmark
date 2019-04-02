@@ -7,6 +7,7 @@
 #include <range/v3/action/sort.hpp>
 #include <range/v3/algorithm/find.hpp>
 #include <range/v3/algorithm/lower_bound.hpp>
+#include <range/v3/numeric/accumulate.hpp>
 
 template<class TimeUnit = std::chrono::milliseconds, class Closure>
 static auto measure(Closure&& closure){
@@ -32,7 +33,7 @@ int main()
     using namespace ranges;
 
     const std::size_t size  = 1'000'000;    // 4 Mb
-    const std::size_t times = 1'0000'000;
+    std::size_t times;
 
     const auto forward = [](const auto& _) -> const auto& { return _; };
 
@@ -66,6 +67,8 @@ int main()
             | view::transform(forward)
             | view::transform(forward);
 
+    std::cout << "lower_bound:" << std::endl;
+    times = 1'0000'000;
     {
         int found = 0;
         const auto t = benchmark(times, [&](){
@@ -83,6 +86,25 @@ int main()
         std::cout << found << " "  << t << std::endl;
     }
 
+    std::cout << "-------------" << std::endl;
 
+    std::cout << "accumulate:" << std::endl;
+    times = 100;
+    {
+        int sum = 0;
+        const auto t = benchmark(times, [&](){
+            sum += accumulate(list, 0);
+        });
+
+        std::cout << sum << " "  << t << std::endl;
+    }
+    {
+        int sum = 0;
+        const auto t = benchmark(times, [&](){
+            sum += accumulate(list2, 0);
+        });
+
+        std::cout << sum << " "  << t << std::endl;
+    }
     return 0;
 }
